@@ -7,9 +7,14 @@
 #include <cstdlib>
 #include <filesystem>
 
+#include <rex/cvar.h>
 #include <rex/filesystem.h>
+#include <rex/input/device_assignment.h>
 #include <rex/input/input_system.h>
+#include <rex/input/mnk/mnk_input_driver.h>
 #include <rex/input/nop/nop_input_driver.h>
+#include <rex/input/sdl/sdl_input_driver.h>
+#include <rex/input/xinput/xinput_input_driver.h>
 #include <rex/logging.h>
 #include <rex/rex_app.h>
 #include <rex/system/kernel_state.h>
@@ -47,9 +52,40 @@ class ForzaHorizon1App : public rex::ReXApp {
 
   void OnPreSetup(rex::RuntimeConfig& config) override {
     forza_crash::InstallCrashStackDumper();
-    config.input_factory = REX_INPUT_BACKEND([](bool) {
-      auto input_system = std::make_unique<rex::input::InputSystem>(nullptr);
-      input_system->AddDriver(std::make_unique<rex::input::nop::NopInputDriver>(nullptr, 0));
+    // Input (2026-09-08): the rexglue-init template forced a Nop-only driver,
+    // so the guest always saw "no controller connected" and sat at the
+    // title/press-start screen. Wire up the real drivers instead:
+    // SDL (gamepads) + XInput (native Xbox pads) + MnK (keyboard/mouse
+    // emulating pad 0) + Nop fallback for tool mode / no devices.
+    // SharedAssignment merges every physical device into guest user 0, which
+    // is what this single-player title polls; MergeInto ORs buttons, takes
+    // max triggers / larger stick deflection, and neutral pads never steal
+    // the slot. Deterministic on purpose: --input_backend is bypassed.
+    // Keyboard needs mnk_mode; default it on unless the user already chose
+    // (config file, REX_ env, or --mnk_mode CLI flag wins).
+    if (rex::cvar::GetFlagSource("mnk_mode") ==
+        rex::cvar::Source::kDefault) {
+      rex::cvar::SetFlagByName("mnk_mode", "true");
+    }
+    config.input_factory = REX_INPUT_BACKEND([](bool tool_mode) {
+      auto input_system =
+          std::make_unique<rex::input::InputSystem>(nullptr);
+      if (tool_mode) {
+        input_system->AddDriver(
+            std::make_unique<rex::input::nop::NopInputDriver>(nullptr, 0));
+        return input_system;
+      }
+      input_system->AddDriver(
+          std::make_unique<rex::input::sdl::SDLInputDriver>(nullptr, 0));
+      input_system->AddDriver(
+          std::make_unique<rex::input::xinput::XinputInputDriver>(
+              nullptr, 0));
+      input_system->AddDriver(
+          std::make_unique<rex::input::mnk::MnkInputDriver>(nullptr, 0));
+      input_system->AddDriver(
+          std::make_unique<rex::input::nop::NopInputDriver>(nullptr, 0));
+      input_system->SetDeviceAssignment(
+          std::make_unique<rex::input::SharedAssignment>());
       return input_system;
     });
   }

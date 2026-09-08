@@ -123,6 +123,18 @@ extracted game files. `*.log` covers smoke-test logs and
   pool upstream, re-test with the hook removed.
 - Facade DllMain only runs on guest-thread loads. Host-thread preloads
   poison this (module resident, entry never runs).
+- Input (2026-09-08, `FH1/src/forza_horizon_1_app.h` `OnPreSetup`): the
+  `rexglue init` template forced a Nop-only `input_factory`, so the guest
+  always saw "no controller" and stuck at title/press-start. Now wired:
+  SDL + XInput + MnK (keyboard/mouse → pad 0) + Nop fallback, with
+  `SharedAssignment` merging every device into guest user 0 (the only
+  user this single-player title polls; buttons OR, triggers max, sticks
+  largest-deflection, neutral pads never steal). Tool mode stays Nop-only.
+  `mnk_mode` defaults ON unless the user already set it (config/env/CLI);
+  `--mnk_mode=false` disables keyboard, `--keybind_*` rebinds,
+  `--mnk_mouse=false` drops mouse-look. `main.cpp` still sets
+  `SDL_JOYSTICK_WGI=0` (template default; avoids SDL/XInput double-report
+  of the same pad — the merge would tolerate it anyway).
 
 ## Upstream / SDK issues to report
 

@@ -1,0 +1,31 @@
+# forza_horizon_1 - ReXGlue manifest (SDK 0.10.0, manifest-first flow).
+#
+# Migrated from the pre-manifest forza_horizon_1_config.toml. The old
+# [functions] allowlist is obsolete: codegen now analyzes the whole XEX,
+# with manual entries living in forza_horizon_1_functions.toml instead.
+# With those entries, codegen validates cleanly and the build's codegen
+# stamp target regenerates on its own. (If validation ever fails again,
+# run `rexglue --force codegen forza_horizon_1_manifest.toml` by hand from
+# FH1/ to override it while triaging.)
+
+[project]
+name = "forza_horizon_1"
+sdk_version = "0.10.0"
+game_root = "../assets"
+
+[entrypoint]
+file_path = "../assets/default.xex"
+out_directory_path = "generated/default"
+includes = ["forza_horizon_1_functions.toml"]
+
+[[modules]]
+guest_path = "xmediafacade_default.xex"
+file_path = "../assets/XMediaFacade_default.xex"
+out_directory_path = "generated/xmediafacade_default"
+includes = ["xmediafacade_default_functions.toml"]
+
+[[modules]]
+guest_path = "speechfacade_default.xex"
+file_path = "../assets/SpeechFacade_default.xex"
+out_directory_path = "generated/speechfacade_default"
+includes = ["speechfacade_default_functions.toml"]

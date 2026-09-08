@@ -1,0 +1,93 @@
+# forza_horizon_1 - manual codegen overrides, included from
+# forza_horizon_1_manifest.toml ([entrypoint] includes).
+#
+# Each entry forces discovery of a function the static analysis misses
+# (typically vtable-only targets with no direct callers). Format:
+#   0x<addr> = {}            # discover with defaults
+#   0x<addr> = {size = 0xN}  # bound the function (size/end are exclusive)
+#
+# Without these, codegen fails validation ("UnresolvedCall ... target not
+# in any function") and the build's codegen step cannot succeed. Find new
+# entries by running the game with --log_file=... and looking for:
+#   [FATAL] Call to invalid or unregistered function at guest address 0x...
+# then verify the address is inside the entrypoint image before adding it.
+
+[functions]
+# Virtual method reached right after XamContentCreateEnumerator during boot.
+# Called indirectly (vtable); sits in the 8-byte thunk table at 0x830B52xx.
+# Verified to disassemble to a real method (loads fields from r3, returns
+# small int) via scratch codegen before adding here.
+0x830B52F0 = {}
+# Reached during boot right after audio endpoint setup + notify listener
+# creation. Sits 8 bytes before sub_82F502C8; same missed-table pattern as
+# 0x830B52F0 (found via runtime FATAL 2026-09-06).
+0x82F502C0 = {}
+# Reached on the main thread right after XamNotifyCreateListener, same boot
+# phase as 0x82F502C0. Follows sub_830B6530 in the 0x830B65xx thunk run
+# (found via runtime FATAL 2026-09-06).
+0x830B6570 = {}
+# Same boot phase, ~1s after XamNotifyCreateListener. Hole between
+# sub_830B6C38 and sub_830B6C68 (found via runtime FATAL 2026-09-07).
+0x830B6C50 = {}
+# Reached while the game reads game data (Media\1.sku, ThumbnailCamSettings,
+# d:\DebugOptions.ini). Single 8-byte hole between sub_830FEC88 and
+# sub_830FEC98 (found via runtime FATAL 2026-09-07).
+0x830FEC90 = {}
+# Reached while polling XMPGetPlaybackController during boot media setup.
+# Gap between sub_8249CC40 and sub_8249CC68 (found via runtime FATAL
+# 2026-09-07).
+0x8249CC50 = {}
+# Same media-setup thread, one step later. 8-byte hole between sub_8249BE88
+# and sub_8249BEB0 (found via runtime FATAL 2026-09-07).
+0x8249BE98 = {}
+# XMediaFacade calls back into the game (sub_880584A0 -> sub_830B6510 ->
+# sub_830BBFE8) and hits this hole between sub_830B0048 and sub_830B0060
+# (found via runtime FATAL + SIGABRT native stack 2026-09-07).
+0x830B0058 = {}
+# Worker thread (82A7D410 -> ... -> sub_82450160) indirect-calls this hole
+# between sub_8257EE78 and sub_8257EEA0 (found via runtime FATAL + SIGABRT
+# native stack 2026-09-07).
+0x8257EE88 = {}
+# Same call site (sub_82450160+0x1270) walking a table, next entry: hole
+# between sub_8247A5A0 and sub_8247A5F8 (found via runtime FATAL + SIGABRT
+# native stack 2026-09-07).
+0x8247A5B8 = {}
+# Same site, following entry (found via runtime FATAL + SIGABRT native
+# stack 2026-09-07).
+0x8247A5E0 = {}
+# GPU interrupt-callback thread, after first graphics pipelines are created
+# (intro text renders). Hole between sub_8249C638 and sub_8249C660 (found
+# via runtime FATAL 2026-09-07).
+0x8249C648 = {}
+# Reached on the media-polling thread (t2256, XMPGetPlaybackController loop)
+# right after the intro video ends (XMPSetPlaybackController(0,0) +
+# BroadcastNotification 0xa000003, then UI bg texture loads). Hole between
+# sub_82F56738 and sub_82F567B4; neighbors are small error-code thunks
+# (li r3,31/37/0), same missed-table pattern (found via runtime FATAL
+# 0x82F56798, 2026-09-07).
+0x82F56798 = {}
+# Same post-intro transition, GPU interrupt-callback thread (t14164,
+# SetInterruptCallback 829EE1F8). Hole between sub_8249C420 (pure vtable
+# trampoline: lwz 0(r3)/76(r11); bctr) and sub_8249C478, same 0x8249C4xx
+# vtable-dispatch run as 0x8249C648 (found via runtime FATAL 0x8249C460,
+# 2026-09-07).
+0x8249C460 = {}
+# Branch targets codegen validation flags as unresolved. Carried over from
+# the pre-manifest forza_horizon_1_config.toml [functions] allowlist.
+# (0x830ED910 from that list only warns during Write, it is not a
+# validation error, so it stays out.)
+0x82B1ABD0 = {}
+0x82B1ABE8 = {}
+0x82B1ABF0 = {}
+0x82B1ABF8 = {}
+0x82B1AC00 = {}
+0x82B1AC08 = {}
+0x82B3B8B0 = {}
+0x82B3B8B8 = {}
+0x82B3B8C0 = {}
+0x82B3B8C8 = {}
+0x82CF87F8 = {}
+0x82F1ED30 = {}
+0x82F5CCDC = {}
+0x82F761F4 = {}
+0x82F7630C = {}

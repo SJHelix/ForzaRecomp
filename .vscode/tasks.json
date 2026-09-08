@@ -2,12 +2,12 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "build (FH1 ninja-clang-debug)",
+			"label": "build (FH1 win-amd64-debug)",
 			"type": "shell",
 			"command": "cmake",
 			"args": [
 				"--build",
-				"${workspaceFolder}/FH1/out/build/ninja-clang-debug"
+				"${workspaceFolder}/FH1/out/build/win-amd64-debug"
 			],
 			"group": {
 				"kind": "build",

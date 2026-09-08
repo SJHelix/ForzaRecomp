@@ -1,0 +1,8 @@
+# SpeechFacade_default - manual codegen overrides, included from
+# forza_horizon_1_manifest.toml ([[modules]] speechfacade includes).
+# Same scheme as forza_horizon_1_functions.toml, but scoped to this module:
+# addresses are guest addresses in the module's own image (0x89xxxxxx).
+
+[functions]
+# Branch target codegen validation flags as unresolved.
+0x890E2FA0 = {}

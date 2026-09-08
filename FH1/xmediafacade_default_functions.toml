@@ -1,0 +1,18 @@
+# XMediaFacade_default - manual codegen overrides, included from
+# forza_horizon_1_manifest.toml ([[modules]] xmediafacade includes).
+# Same scheme as forza_horizon_1_functions.toml, but scoped to this module:
+# addresses are guest addresses in the module's own image.
+#
+# Find new entries the same way: runtime
+#   [FATAL] Call to invalid or unregistered function at guest address 0x88...
+# in the 0x88xxxxxx range belongs to this module.
+
+[functions]
+# Branch target codegen validation flags as unresolved (called from
+# 0x880503D0, next to the first boot FATAL at 0x88050388).
+0x88055B80 = {}
+# Called during module load (XexLoadImage on a guest thread): sub_881E8D88
+# dispatches through a pointer table and hits this unregistered address
+# (found via runtime FATAL + SIGABRT native stack 2026-09-07). Same
+# missed-table pattern as the entrypoint gaps.
+0x882435D8 = {}

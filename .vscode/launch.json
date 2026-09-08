@@ -8,10 +8,12 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "X:\\Game Development\\FH1Recomp\\win-amd64\\FH1\\forza_horizon_1.exe",
-            "args": [],
+            "program": "${workspaceFolder}/FH1/out/build/win-amd64-debug/forza_horizon_1.exe",
+            "args": [
+                "--gpu_plugin=xenos"
+            ],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "externalTerminal"
         }

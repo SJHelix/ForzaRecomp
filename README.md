@@ -28,3 +28,4 @@ This repository intentionally excludes copyrighted game content.
 
 - ReXGlue SDK can be updated independently in the sibling repo.
 - Generated files may be overwritten by regeneration; keep custom patch notes.
+- This project is being developed using artificial intelligence. Use it at your own risk.
